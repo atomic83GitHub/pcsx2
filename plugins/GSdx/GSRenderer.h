@@ -43,7 +43,6 @@ protected:
 	int m_aspectratio;
 	bool m_vsync;
 	bool m_aa1;
-	bool m_framelimit;
 	bool m_shaderfx;
 	bool m_fxaa;
 	bool m_shadeboost;
@@ -72,7 +71,6 @@ public:
 	GSVector2i GetInternalResolution();
 	void SetAspectRatio(int aspect) {m_aspectratio = aspect;}
 	void SetVSync(bool enabled);
-	void SetFrameLimit(bool limit);
 	virtual void SetExclusive(bool isExcl) {}
 
 	virtual bool BeginCapture();
