@@ -71,8 +71,7 @@ function(check_compiler_version version_warn version_err)
         endif()
 
         if(GCC_VERSION VERSION_EQUAL "7.0" OR GCC_VERSION VERSION_EQUAL "7.1")
-            message(FATAL_ERROR "GCC 7.0/7.1  generates invalid code => https://gcc.gnu.org/bugzilla/show_bug.cgi?id=80799\n"
-            "You can either backport the fix or swith to another version of GCC.")
+            GCC7_BUG()
         endif()
 
         set(GCC_VERSION "${GCC_VERSION}" PARENT_SCOPE)
