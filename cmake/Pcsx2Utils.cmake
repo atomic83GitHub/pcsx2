@@ -70,10 +70,6 @@ function(check_compiler_version version_warn version_err)
             endif()
         endif()
 
-        if(GCC_VERSION VERSION_EQUAL "7.0" OR GCC_VERSION VERSION_EQUAL "7.1")
-            GCC7_BUG()
-        endif()
-
         set(GCC_VERSION "${GCC_VERSION}" PARENT_SCOPE)
     endif()
 endfunction()
