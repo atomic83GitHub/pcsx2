@@ -673,8 +673,8 @@ GSTexture* GSDevice11::CreateSurface(int type, int w, int h, int format)
 
 	memset(&desc, 0, sizeof(desc));
 
-	desc.Width = w;
-	desc.Height = h;
+	desc.Width = std::max(1, w); // texture min is 1 for dx
+	desc.Height = std::max(1, h);
 	desc.Format = (DXGI_FORMAT)format;
 	desc.MipLevels = 1;
 	desc.ArraySize = 1;
@@ -735,7 +735,7 @@ GSTexture* GSDevice11::CreateSurface(int type, int w, int h, int format)
 GSTexture* GSDevice11::FetchSurface(int type, int w, int h, int format)
 {
 	if (format == 0)
-		format = (type == GSTexture::DepthStencil) ? DXGI_FORMAT_R32G8X24_TYPELESS : DXGI_FORMAT_R8G8B8A8_UNORM;
+		format = (type == GSTexture::DepthStencil || type == GSTexture::SparseDepthStencil) ? DXGI_FORMAT_R32G8X24_TYPELESS : DXGI_FORMAT_R8G8B8A8_UNORM;
 
 	return __super::FetchSurface(type, w, h, format);
 }

@@ -74,31 +74,15 @@ bool GSC_Bully(const GSFrameInfo& fi, int& skip)
 	return true;
 }
 
-// Potentially partially dx only
 bool GSC_DBZBT2(const GSFrameInfo& fi, int& skip)
 {
 	if(skip == 0)
 	{
-		if(fi.TME && /*fi.FBP == 0x00000 && fi.FPSM == PSM_PSMCT16 &&*/ (fi.TBP0 == 0x01c00 || fi.TBP0 == 0x02000) && fi.TPSM == PSM_PSMZ16)
-		{
-			// Sky effect. Depth on texture shuffle.
-			// The hack also causes issues with the blur effects, breaking them.
-			// Note: (PAL skip 5) = (NTSC skip 4)
-			if(g_crc_region == CRC::EU)
-			{
-				// Keep the hack on partial level because we have a half screen issue on EU region.
-				skip = 5;
-			}
-			else if(Aggressive)
-			{
-				skip = 4;
-			}
-		}
-		else if((g_crc_region == CRC::EU || Aggressive || !s_nativeres) && !fi.TME && (fi.FBP == 0x02a00 || fi.FBP == 0x03000) && fi.FPSM == PSM_PSMCT16)
+		if((Aggressive || !s_nativeres) && !fi.TME && (fi.FBP == 0x02a00 || fi.FBP == 0x03000) && fi.FPSM == PSM_PSMCT16)
 		{
 			// Character outlines.
 			// Glow/blur effect. Causes ghosting on upscaled resolution.
-			// Don't enable hack on native res if crc(ntsc only) is below aggressive.
+			// Don't enable hack on native res if crc is below aggressive.
 			skip = 10;
 		}
 	}
@@ -106,32 +90,15 @@ bool GSC_DBZBT2(const GSFrameInfo& fi, int& skip)
 	return true;
 }
 
-// Potentially partially dx only
 bool GSC_DBZBT3(const GSFrameInfo& fi, int& skip)
 {
 	if(skip == 0)
 	{
-		if(fi.TME && (fi.FBP == 0x00000 || fi.FBP == 0x00e00 || fi.FBP == 0x01000) && fi.FPSM == PSM_PSMCT16 && fi.TPSM == PSM_PSMZ16)
-		{
-			// Sky effect. Depth on texture shuffle.
-			// The hack also causes issues with the blur effects, breaking them.
-			// Note: Depth Emulation should be disabled when running this hack. It may cause some ground glitches otherwise.
-			// Note2: (PAL skip 5) = (NTSC skip 4) 
-			if(g_crc_region == CRC::EU)
-			{
-				// Keep the hack on partial level because we have a half screen issue on EU region.
-				skip = 5;
-			}
-			else if(Aggressive)
-			{
-				skip = 4;
-			}
-		}
-		else if((g_crc_region == CRC::EU || Aggressive || !s_nativeres) && fi.TME && (fi.FBP == 0x03400 || fi.FBP == 0x02e00) && fi.FPSM == fi.TPSM && fi.TBP0 == 0x03f00 && fi.TPSM == PSM_PSMCT32)
+		if((Aggressive || !s_nativeres) && fi.TME && (fi.FBP == 0x03400 || fi.FBP == 0x02e00) && fi.FPSM == fi.TPSM && fi.TBP0 == 0x03f00 && fi.TPSM == PSM_PSMCT32)
 		{
 			// Ghosting/Blur effect. Upscaling issue.
 			// Can be fixed with TC X,Y offsets.
-			// Don't enable hack on native res if crc(ntsc only) is below aggressive.
+			// Don't enable hack on native res if crc is below aggressive.
 			skip = 3;
 		}
 	}
@@ -190,13 +157,13 @@ bool GSC_DemonStone(const GSFrameInfo& fi, int& skip)
 	return true;
 }
 
-// Channel effect not properly supported yet
 bool GSC_GiTS(const GSFrameInfo& fi, int& skip)
 {
 	if(skip == 0)
 	{
 		if(fi.TME && fi.FBP == 0x03000 && fi.FPSM == PSM_PSMCT32 && fi.TPSM == PSM_PSMT8)
 		{
+			// Channel effect not properly supported yet
 			skip = 9;
 		}
 	}
@@ -628,26 +595,6 @@ bool GSC_DevilMayCry3(const GSFrameInfo& fi, int& skip)
 	return true;
 }
 
-bool GSC_StarWarsForceUnleashed(const GSFrameInfo& fi, int& skip)
-{
-	if(skip == 0)
-	{
-		if(fi.TME && (fi.FBP == 0x038a0 || fi.FBP == 0x03ae0) && fi.FPSM == fi.TPSM && fi.TBP0 == 0x02300 && fi.TPSM == PSM_PSMZ24)
-		{
-			skip = 1000;	//9, shadows
-		}
-	}
-	else
-	{
-		if(fi.TME && fi.FBP == fi.TBP0 && fi.FPSM == fi.TPSM && (fi.TBP0 == 0x034a0 || fi.TBP0 == 0x36e0) && fi.TPSM == PSM_PSMCT16)
-		{
-			skip = 2;
-		}
-	}
-
-	return true;
-}
-
 bool GSC_BurnoutGames(const GSFrameInfo& fi, int& skip)
 {
 	if(skip == 0)
@@ -824,7 +771,6 @@ bool GSC_SonicUnleashed(const GSFrameInfo& fi, int& skip)
 		if(fi.TME && fi.FPSM == PSM_PSMCT16S && fi.TBP0 == 0x00000 && fi.TPSM == PSM_PSMCT16)
 		{
 			// Improper Texture shuffle emulation.
-			// Half Screen bottom issue.
 			skip = 1000; // shadow
 		}
 	}
@@ -1098,7 +1044,7 @@ bool GSC_ValkyrieProfile2(const GSFrameInfo& fi, int& skip)
 		}
 		if(fi.TME && fi.FPSM == fi.TPSM && fi.TPSM == PSM_PSMCT16 && fi.FBMSK == 0x03FFF)
 		{
-			skip = 1; // //garbage in cutscenes, doesn't remove completely, better use "Alpha Hack"
+			skip = 1; // //garbage in cutscenes, doesn't remove completely.
 		}*/
 		if(fi.TME && fi.FBP == fi.TBP0 && fi.FPSM == PSM_PSMCT32 && fi.TPSM == PSM_PSMT4HH)
 		{
@@ -1305,56 +1251,6 @@ bool GSC_GodOfWar(const GSFrameInfo& fi, int& skip)
 	return true;
 }
 
-bool GSC_GTASanAndreas(const GSFrameInfo& fi, int& skip)
-{
-	if(skip == 0)
-	{
-		if(fi.TME && (fi.FBP ==0x0a00 || fi.FBP ==0x08c0) && (fi.TBP0 ==0x1b80 || fi.TBP0 ==0x1a40) && fi.FPSM == fi.TPSM && fi.TPSM == PSM_PSMCT32)
-		{
-			skip = 1; // Ghosting
-		}
-	}
-
-	return true;
-}
-
-bool GSC_MetalGearSolid3(const GSFrameInfo& fi, int& skip)
-{
-	// Halfscreen bottom issue
-	// Hack is old that was used to remove channel shuffle and likely needs to be updated.
-	if(skip == 0)
-	{
-		if(fi.TME && fi.FBP == 0x02000 && fi.FPSM == PSM_PSMCT32 && (fi.TBP0 == 0x00000 || fi.TBP0 == 0x01000) && fi.TPSM == PSM_PSMCT24)
-		{
-			skip = 1000; // 76, 79
-		}
-		else if(fi.TME && fi.FBP == 0x02800 && fi.FPSM == PSM_PSMCT24 && (fi.TBP0 == 0x00000 || fi.TBP0 == 0x01000) && fi.TPSM == PSM_PSMCT32)
-		{
-			skip = 1000; // 69
-		}
-	}
-	else
-	{
-		if(!fi.TME && (fi.FBP == 0x00000 || fi.FBP == 0x01000) && fi.FPSM == PSM_PSMCT32)
-		{
-			skip = 0;
-		}
-		else if(!fi.TME && fi.FBP == fi.TBP0 && fi.TBP0 == 0x2000 && fi.FPSM == PSM_PSMCT32 && fi.TPSM == PSM_PSMCT24)
-		{
-			if(g_crc_region == CRC::US || g_crc_region == CRC::JP || g_crc_region == CRC::KO)
-			{
-				skip = 119;	//ntsc
-			}
-			else
-			{
-				skip = 136;	//pal
-			}
-		}
-	}
-
-	return true;
-}
-
 template<uptr state_addr>
 bool GSC_SMTNocturneDDS(const GSFrameInfo& fi, int& skip)
 {
@@ -1430,6 +1326,19 @@ bool GSC_Okami(const GSFrameInfo& fi, int& skip)
 	return true;
 }
 
+bool GSC_RedDeadRevolver(const GSFrameInfo& fi, int& skip)
+{
+	if(skip == 0)
+	{
+		if(fi.FBP == 0x03700 && fi.FPSM == PSM_PSMCT32 && fi.TPSM == PSM_PSMCT24)
+		{
+			skip = 2; // Blur
+		}
+	}
+
+	return true;
+}
+
 bool GSC_ResidentEvil4(const GSFrameInfo& fi, int& skip)
 {
 	if (skip == 0)
@@ -1466,22 +1375,6 @@ bool GSC_ShinOnimusha(const GSFrameInfo& fi, int& skip)
 		else if(fi.TME && (fi.TBP0 ==0x1400 || fi.TBP0 ==0x1000 ||fi.TBP0 == 0x1200) && (fi.TPSM == PSM_PSMCT32 || fi.TPSM == PSM_PSMCT24))
 		{
 			skip = 1; // Eliminate excessive flooding, water and other light and shadow
-		}
-	}
-
-	return true;
-}
-
-bool GSC_SimpsonsGame(const GSFrameInfo& fi, int& skip)
-{
-	if(skip == 0)
-	{
-		if(fi.TME && fi.FBP == 0x03000 && fi.FPSM == PSM_PSMCT32 && fi.TPSM == PSM_PSMT8H)
-		{
-			// Removes character outlines, similar to DBZ BT3.
-			// Upscaling causes the outlines to be out of place but can be fixed with TC Offsets.
-			// The hack can be used to increase slight performance.
-			skip = 2;
 		}
 	}
 
@@ -1650,7 +1543,6 @@ void GSState::SetupCrcHack()
 		lut[CRC::ShadowofRome] = GSC_ShadowofRome;
 		lut[CRC::Simple2000Vol114] = GSC_Simple2000Vol114;
 		lut[CRC::Spartan] = GSC_Spartan;
-		lut[CRC::StarWarsForceUnleashed] = GSC_StarWarsForceUnleashed;
 		lut[CRC::SFEX3] = GSC_SFEX3;
 		lut[CRC::TalesOfLegendia] = GSC_TalesOfLegendia;
 		lut[CRC::TalesofSymphonia] = GSC_TalesofSymphonia;
@@ -1677,8 +1569,6 @@ void GSState::SetupCrcHack()
 		lut[CRC::BurnoutTakedown] = GSC_BurnoutGames;
 
 		// Half Screen bottom issue
-		lut[CRC::DBZBT2] = GSC_DBZBT2; // Half screen on depth format 16bit
-		lut[CRC::DBZBT3] = GSC_DBZBT3; // Half screen on depth format 16bit
 		lut[CRC::DemonStone] = GSC_DemonStone; // Half screen on texture shuffle
 		lut[CRC::Tekken5] = GSC_Tekken5;
 
@@ -1686,17 +1576,14 @@ void GSState::SetupCrcHack()
 		lut[CRC::Genji] = GSC_Genji;
 
 		// Texture shuffle
-		lut[CRC::BigMuthaTruckers] = GSC_BigMuthaTruckers; // + Half screen on texture shuffle
+		lut[CRC::BigMuthaTruckers] = GSC_BigMuthaTruckers;
 		lut[CRC::DeathByDegreesTekkenNinaWilliams] = GSC_DeathByDegreesTekkenNinaWilliams; // + Upscaling issues
-		lut[CRC::SonicUnleashed] = GSC_SonicUnleashed; // + Half screen on texture shuffle
-
-		// These games emulate a stencil buffer with the alpha channel of the RT (too slow to move to Aggressive)
-		lut[CRC::RadiataStories] = GSC_RadiataStories;
-		lut[CRC::StarOcean3] = GSC_StarOcean3;
-		lut[CRC::ValkyrieProfile2] = GSC_ValkyrieProfile2;
+		lut[CRC::SonicUnleashed] = GSC_SonicUnleashed;
 
 		// Upscaling hacks
 		lut[CRC::Bully] = GSC_Bully;
+		lut[CRC::DBZBT2] = GSC_DBZBT2;
+		lut[CRC::DBZBT3] = GSC_DBZBT3;
 		lut[CRC::EvangelionJo] = GSC_EvangelionJo;
 		lut[CRC::FightingBeautyWulong] = GSC_FightingBeautyWulong;
 		lut[CRC::GodOfWar2] = GSC_GodOfWar2;
@@ -1723,13 +1610,20 @@ void GSState::SetupCrcHack()
 		lut[CRC::HauntingGround] = GSC_HauntingGround; // + Texture cache issue + Date
 		lut[CRC::XenosagaE3] = GSC_XenosagaE3;
 
-		// Those games might requires accurate fbmask
+		// These games might requires accurate fbmask
 		lut[CRC::Sly2] = GSC_SlyGames; // + Upscaling issue
 		lut[CRC::Sly3] = GSC_SlyGames; // + Upscaling issue
 
-		// Those games require accurate_colclip (perf)
+		// These games require accurate_colclip (perf)
 		lut[CRC::CastlevaniaCoD] = GSC_CastlevaniaGames;
 		lut[CRC::CastlevaniaLoI] = GSC_CastlevaniaGames;
+
+		// These games emulate a stencil buffer with the alpha channel of the RT (too slow to move to Aggressive)
+		// Needs at least Basic Blending,
+		// see https://github.com/PCSX2/pcsx2/pull/2921
+		lut[CRC::RadiataStories] = GSC_RadiataStories;
+		lut[CRC::StarOcean3] = GSC_StarOcean3;
+		lut[CRC::ValkyrieProfile2] = GSC_ValkyrieProfile2;
 	}
 
 	if (Aggressive) {
@@ -1738,7 +1632,7 @@ void GSState::SetupCrcHack()
 		lut[CRC::FFX2] = GSC_FFXGames;
 		lut[CRC::FFX] = GSC_FFXGames;
 		lut[CRC::FFXII] = GSC_FFXGames;
-		lut[CRC::MetalGearSolid3] = GSC_MetalGearSolid3; // Half screen issue + accurate blending
+		lut[CRC::RedDeadRevolver] = GSC_RedDeadRevolver;
 		lut[CRC::ResidentEvil4] = GSC_ResidentEvil4;
 		lut[CRC::ShinOnimusha] = GSC_ShinOnimusha;
 		lut[CRC::SMTDDS1] = GSC_SMTNocturneDDS<0x203BA820>;
@@ -1748,9 +1642,7 @@ void GSState::SetupCrcHack()
 
 		// Upscaling issues
 		lut[CRC::GodOfWar] = GSC_GodOfWar;
-		lut[CRC::GTASanAndreas] = GSC_GTASanAndreas; // RW frame buffer. UserHacks_AutoFlush allow to emulate it correctly. Can be used as an upscaling hack.
 		lut[CRC::Okami] = GSC_Okami;
-		lut[CRC::SimpsonsGame] = GSC_SimpsonsGame;
 	}
 
 	m_gsc = lut[m_game.title];

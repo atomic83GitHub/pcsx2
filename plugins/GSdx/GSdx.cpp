@@ -302,6 +302,11 @@ void GSdxApp::Init()
 	m_gs_acc_blend_level.push_back(GSSetting(4, "Full", "Very Slow"));
 	m_gs_acc_blend_level.push_back(GSSetting(5, "Ultra", "Ultra Slow"));
 
+	m_gs_acc_blend_level_d3d11.push_back(GSSetting(0, "None", "Fastest"));
+	m_gs_acc_blend_level_d3d11.push_back(GSSetting(1, "Basic", "Recommended"));
+	m_gs_acc_blend_level_d3d11.push_back(GSSetting(2, "Medium", "Debug"));
+	m_gs_acc_blend_level_d3d11.push_back(GSSetting(3, "High", "Debug"));
+
 	m_gs_tv_shaders.push_back(GSSetting(0, "None", ""));
 	m_gs_tv_shaders.push_back(GSSetting(1, "Scanline filter", ""));
 	m_gs_tv_shaders.push_back(GSSetting(2, "Diagonal filter", ""));
@@ -339,6 +344,9 @@ void GSdxApp::Init()
 	m_default_configuration["CaptureVideoCodecDisplayName"]               = "";
 	m_default_configuration["dx_break_on_severity"]                       = "0";
 
+	// D3D Blending option
+	m_default_configuration["accurate_blending_unit_d3d11"]               = "1";
+
 	// OpenCL device. Windows only for now.
 	m_default_configuration["ocldev"]                                     = "";
 
@@ -356,6 +364,7 @@ void GSdxApp::Init()
 	m_default_configuration["accurate_date"]                              = "1";
 	m_default_configuration["accurate_blending_unit"]                     = "1";
 	m_default_configuration["AspectRatio"]                                = "1";
+	m_default_configuration["autoflush_sw"]                               = "1";
 	m_default_configuration["capture_enabled"]                            = "0";
 	m_default_configuration["capture_out_dir"]                            = "/tmp/GSdx_Capture";
 	m_default_configuration["capture_threads"]                            = "4";
@@ -438,7 +447,6 @@ void GSdxApp::Init()
 	m_default_configuration["UserHacks_align_sprite_X"]                   = "0";
 #ifdef _WIN32
 	// Direct3D only hacks.
-	m_default_configuration["UserHacks_AlphaHack"]                        = "0";
 	m_default_configuration["UserHacks_AlphaStencil"]                     = "0";
 #endif
 	m_default_configuration["UserHacks_AutoFlush"]                        = "0";
@@ -459,6 +467,7 @@ void GSdxApp::Init()
 	m_default_configuration["UserHacks_WildHack"]                         = "0";
 	m_default_configuration["wrap_gs_mem"]                                = "0";
 	m_default_configuration["vsync"]                                      = "0";
+	m_default_configuration["disable_ts_half_bottom"]                     = "0";
 }
 
 #if defined(__unix__)

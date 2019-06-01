@@ -956,6 +956,9 @@ AppConfig::UiTemplateOptions::UiTemplateOptions()
 	OutputInterlaced	= L"Interlaced";
 	Paused				= L"<PAUSED> ";
 	TitleTemplate		= L"Slot: ${slot} | Speed: ${speed} (${vfps}) | ${videomode} | Limiter: ${limiter} | ${gsdx} | ${omodei} | ${cpuusage}";
+#ifndef DISABLE_RECORDING
+	RecordingTemplate	= L"Slot: ${slot} | Frame: ${frame}/${maxFrame} | Rec. Mode: ${mode} | Speed: ${speed} (${vfps}) | Limiter: ${limiter}";
+#endif
 }
 
 void AppConfig::UiTemplateOptions::LoadSave(IniInterface& ini)
@@ -972,6 +975,9 @@ void AppConfig::UiTemplateOptions::LoadSave(IniInterface& ini)
 	IniEntry(OutputInterlaced);
 	IniEntry(Paused);
 	IniEntry(TitleTemplate);
+#ifndef DISABLE_RECORDING
+	IniEntry(RecordingTemplate);
+#endif
 }
 
 int AppConfig::GetMaxPresetIndex()
@@ -1058,7 +1064,6 @@ bool AppConfig::IsOkApplyPreset(int n, bool ignoreMTVU)
 
 	// Actual application of current preset over the base settings which all presets use (mostly pcsx2's default values).
 
-	Pcsx2Config::CpuOptions& cpuOps(g_Conf->EmuOptions.Cpu);
 	bool isRateSet = false, isSkipSet = false, isMTVUSet = ignoreMTVU ? true : false; // used to prevent application of specific lower preset values on fallthrough.
 	switch (n) // Settings will waterfall down to the Safe preset, then stop. So, Balanced and higher will inherit any settings through Safe.
 	{

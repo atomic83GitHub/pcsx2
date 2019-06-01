@@ -785,6 +785,9 @@ void GSRendererOGL::EmulateTextureSampler(const GSTextureCache::Source* tex)
 		// Use invalid size to denormalize ST coordinate
 		ps_cb.WH.x = (float)(1 << m_context->stack.TEX0.TW);
 		ps_cb.WH.y = (float)(1 << m_context->stack.TEX0.TH);
+
+		// We can't handle m_target with invalid_tex0 atm due to upscaling
+		ASSERT(!tex->m_target);
 	}
 
 	// Only enable clamping in CLAMP mode. REGION_CLAMP will be done manually in the shader
@@ -905,7 +908,7 @@ GSRendererOGL::PRIM_OVERLAP GSRendererOGL::PrimitiveOverlap()
 	}
 #endif
 
-	//fprintf(stderr, "%d: Yes, code can be optimized (draw of %d vertices)\n", s_n, count);
+	// fprintf(stderr, "%d: Yes, code can be optimized (draw of %d vertices)\n", s_n, count);
 	return overlap;
 }
 
@@ -1027,9 +1030,10 @@ void GSRendererOGL::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sour
 	// Detect framebuffer read that will need special handling
 	if ((m_context->FRAME.Block() == m_context->TEX0.TBP0) && PRIM->TME && m_sw_blending) {
 		if ((m_context->FRAME.FBMSK == 0x00FFFFFF) && (m_vt.m_primclass == GS_TRIANGLE_CLASS)) {
-			// Ratchet & Clank, Jak, Tri-Ace (Star Ocean 3) games use this pattern to compute the shadows.
-			// Alpha (multiplication) tfx is mostly equivalent to -1/+1 stencil operation.
-			GL_DBG("ERROR: Source and Target are the same! Let's sample the framebuffer");
+			// This pattern is used by several games to emulate a stencil (shadow)
+			// Ratchet & Clank, Jak do alpha integer multiplication (tfx) which is mostly equivalent to +1/-1
+			// Tri-Ace (Star Ocean 3/RadiataStories/VP2) uses a palette to handle the +1/-1
+			GL_DBG("Source and Target are the same! Let's sample the framebuffer");
 			m_ps_sel.tex_is_fb = 1;
 			m_require_full_barrier = true;
 		} else if (m_prim_overlap != PRIM_OVERLAP_NO) {
@@ -1297,6 +1301,14 @@ void GSRendererOGL::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sour
 
 	dev->SetupPipeline(m_vs_sel, m_gs_sel, m_ps_sel);
 
+	GSVector4i commitRect = ComputeBoundingBox(rtscale, rtsize);
+
+	if (rt)
+		rt->CommitRegion(GSVector2i(commitRect.z, commitRect.w));
+
+	if (ds)
+		ds->CommitRegion(GSVector2i(commitRect.z, commitRect.w));
+
 	if (DATE_GL42) {
 		GL_PUSH("Date GL42");
 		// It could be good idea to use stencil in the same time.
@@ -1416,4 +1428,11 @@ void GSRendererOGL::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sour
 
 		dev->Recycle(hdr_rt);
 	}
+}
+
+bool GSRendererOGL::IsDummyTexture() const
+{
+	// Texture is actually the frame buffer. Stencil emulation to compute shadow (Jak series/tri-ace game)
+	// Will hit the "m_ps_sel.tex_is_fb = 1" path in the draw
+	return (m_context->FRAME.Block() == m_context->TEX0.TBP0) && PRIM->TME && m_sw_blending && m_vt.m_primclass == GS_TRIANGLE_CLASS && (m_context->FRAME.FBMSK == 0x00FFFFFF);
 }

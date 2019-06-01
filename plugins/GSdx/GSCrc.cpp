@@ -77,22 +77,6 @@ CRC::Game CRC::m_games[] =
 	{0x21068223, Okami, US, 0},
 	{0x891F223F, Okami, EU, 0}, // PAL DE, ES & FR.
 	{0xC5DEFEA0, Okami, JP, 0},
-	{0x086273D2, MetalGearSolid3, EU, 0}, // - PAL UK & FR
-	{0x26A6E286, MetalGearSolid3, DE, 0},
-	{0x9F185CE1, MetalGearSolid3, EU, 0},
-	{0x98D4BC93, MetalGearSolid3, ES, 0},
-	{0x79ED26AD, MetalGearSolid3, EU, 0},
-	{0x5E31EA42, MetalGearSolid3, EU, 0},
-	{0xD7ED797D, MetalGearSolid3, DE, 0},
-	{0x053D2239, MetalGearSolid3, US, 0}, // Metal Gear Solid 3 Subsistence disc1
-	{0x01B2FA7F, MetalGearSolid3, US, 0}, // Metal Gear Solid 3 Subsistence disc2
-	{0xAA31B5BF, MetalGearSolid3, US, 0},
-	{0x86BC3040, MetalGearSolid3, US, 0}, // Metal Gear Solid 3 Subsistence disc1
-	{0x0481AD8A, MetalGearSolid3, JP, 0},
-	{0xC69ACB6F, MetalGearSolid3, KO, 0}, // Metal Gear Solid 3 Snake Eater
-	{0xB0D195EF, MetalGearSolid3, KO, 0}, // Metal Gear Solid 3 Subsistence disc1
-	{0x3EBABC9C, MetalGearSolid3, KO, 0}, // Metal Gear Solid 3 Subsistence disc2
-	{0x8A5C25A7, MetalGearSolid3, ES, 0}, // Metal Gear Solid 3 Subsistence Spanish version
 	{0x278722BF, DBZBT2, EU, 0},
 	{0xFE961D28, DBZBT2, US, 0},
 	{0x0393B6BE, DBZBT2, EU, 0},
@@ -245,13 +229,6 @@ CRC::Game CRC::m_games[] =
 	{0xAA5EC3A3, TalesOfAbyss, JP, 0},
 	{0xFB236A46, SonicUnleashed, US, 0},
 	{0x8C913264, SonicUnleashed, EU, 0},
-	{0x5C1EBD61, SimpsonsGame, EU, 0},
-	{0x5C1EBF61, SimpsonsGame, FR, 0},
-	{0x4C7BB3C8, SimpsonsGame, NoRegion, 0},
-	{0x4C94B32C, SimpsonsGame, NoRegion, 0},
-	{0x565B7E04, SimpsonsGame, IT, 0},
-	{0x206779D8, SimpsonsGame, EU, 0},
-	{0xBBE4D862, SimpsonsGame, US, 0},
 	{0xD71B57F4, Genji, US, 0},
 	{0xFADEBC45, Genji, EU, 0},
 	{0xB4776FC1, Genji, JP, 0},
@@ -328,6 +305,9 @@ CRC::Game CRC::m_games[] =
 	{0xEB198738, LordOfTheRingsThirdAge, US, 0},
 	{0x614F4CF4, LordOfTheRingsThirdAge, EU, 0},
 	{0x37CD4279, LordOfTheRingsThirdAge, KO, 0},
+	{0xE169BAF8, RedDeadRevolver, US, 0},
+	{0xE2E67E23, RedDeadRevolver, EU, 0},
+	{0x87844524, RedDeadRevolver, RU, 0}, // Unofficial RU-version
 	{0x6DF62AEA, BleachBladeBattlers, JP, 0},
 	{0x6EB71AB0, BleachBladeBattlers, JP, 0}, // 2nd
 	{0x3A446111, CastlevaniaCoD, US, 0},
@@ -364,6 +344,7 @@ CRC::Game CRC::m_games[] =
 	{0x05177ECE, TombRaiderLegend, EU, 0},
 	{0x879CDA5E, StarWarsForceUnleashed, US, 0},
 	{0x137C792E, StarWarsForceUnleashed, US, 0},
+	{0xCC9BFDE3, StarWarsForceUnleashed, JP, 0},
 	{0xDAF2145C, StarWarsForceUnleashed, EU, 0},
 	{0x25FC361B, DevilMayCry3, US, 0}, // SE
 	{0x2F7D8AD5, DevilMayCry3, US, 0},
@@ -443,11 +424,6 @@ CRC::Game CRC::m_games[] =
 	{0x5AC7E79C, TouristTrophy, CH, 0}, // cutie comment
 	{0xFF9C0E93, TouristTrophy, US, 0},
 	{0xCA9AA903, TouristTrophy, EU, 0},
-	{0xA1B3F232, GTASanAndreas, EU, 0}, // cutie comment
-	{0xB440A8FE, GTASanAndreas, EU, 0},
-	{0x399A49CA, GTASanAndreas, US, 0},
-	{0x2C6BE434, GTASanAndreas, US, 0},
-	{0x60FE139C, GTASanAndreas, JP, 0},
 	{0xAEDAEE99, GodHand, JP, 0},
 	{0x6FB69282, GodHand, US, 0},
 	{0x924C4AA6, GodHand, KO, 0},
@@ -510,6 +486,7 @@ CRC::Game CRC::m_games[] =
 	{0x972611BB, FIFA05, US, 0},
 	{0x972719A3, FIFA05, EU, 0},
 	{0xC5473413, HarryPotterATCOS, NoRegion, 0}, // EU and US versions have the same CRC - Chamber Of Secrets
+	{0xE1963055, HarryPotterATCOS, JP, 0 }, // Harry Potter to Himitsu no Heya
 	{0xE90BE9F8, HarryPotterATCOS, JP, 0 }, // Coca Cola original Version
 	{0x9C3A84F4, HarryPotterATHBP, US, 0 }, // Half-Blood Prince
 	{0xCB598BC2, HarryPotterATHBP, EU, 0 },

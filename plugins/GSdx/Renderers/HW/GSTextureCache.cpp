@@ -21,6 +21,7 @@
 
 #include "stdafx.h"
 #include "GSTextureCache.h"
+#include "GSRendererHW.h"
 #include "GSUtil.h"
 
 bool GSTextureCache::m_disable_partial_invalidation = false;
@@ -156,6 +157,7 @@ GSTextureCache::Source* GSTextureCache::LookupDepthSource(const GIFRegTEX0& TEX0
 		src->m_target = true; // So renderer can check if a conversion is required
 		src->m_from_target = dst->m_texture; // avoid complex condition on the renderer
 		src->m_32_bits_fmt = dst->m_32_bits_fmt;
+		src->m_valid_rect = dst->m_valid;
 
 		// Insert the texture in the hash set to keep track of it. But don't bother with
 		// texture cache list. It means that a new Source is created everytime we need it.
@@ -1173,6 +1175,31 @@ GSTextureCache::Source* GSTextureCache::CreateSource(const GIFRegTEX0& TEX0, con
 			AttachPaletteToSource(src, psm.pal, true);
 		}
 	}
+	else if (dst && static_cast<GSRendererHW*>(m_renderer)->IsDummyTexture())
+	{
+		// This shortcut is a temporary solution. It isn't a good solution
+		// as it won't work with Channel Shuffle/Texture Shuffle pattern
+		// (we need texture cache result to detect those effects).
+		// Instead a better solution would be to defer the copy/StrechRect later
+		// in the rendering.
+		// Still this poor solution is enough for a huge speed up in a couple of games
+		//
+		// Be aware that you can't use StrechRect between BeginScene/EndScene.
+		// So it could be tricky to put in the middle of the DrawPrims
+
+		// Texture is created to keep code compatibility
+		GSTexture* dTex = m_renderer->m_dev->CreateRenderTarget(tw, th);
+
+		// Keep a trace of origin of the texture
+		src->m_texture = dTex;
+		src->m_target = true;
+		src->m_from_target = dst->m_texture;
+
+		// Even if we sample the framebuffer directly we might need the palette
+		// to handle the format conversion on GPU
+		if (psm.pal > 0)
+			AttachPaletteToSource(src, psm.pal, true);
+	}
 	else if (dst)
 	{
 		// TODO: clean up this mess
@@ -1198,6 +1225,7 @@ GSTextureCache::Source* GSTextureCache::CreateSource(const GIFRegTEX0& TEX0, con
 		// Keep a trace of origin of the texture
 		src->m_target = true;
 		src->m_from_target = dst->m_texture;
+		src->m_valid_rect = dst->m_valid;
 
 		dst->Update();
 
@@ -1452,13 +1480,13 @@ GSTextureCache::Target* GSTextureCache::CreateTarget(const GIFRegTEX0& TEX0, int
 
 	if(type == RenderTarget)
 	{
-		t->m_texture = m_renderer->m_dev->CreateRenderTarget(w, h);
+		t->m_texture = m_renderer->m_dev->CreateSparseRenderTarget(w, h);
 
 		t->m_used = true; // FIXME
 	}
 	else if(type == DepthStencil)
 	{
-		t->m_texture = m_renderer->m_dev->CreateDepthStencil(w, h);
+		t->m_texture = m_renderer->m_dev->CreateSparseDepthStencil(w, h);
 	}
 
 	m_dst[type].push_front(t);
@@ -1526,6 +1554,7 @@ GSTextureCache::Source::Source(GSRenderer* r, const GIFRegTEX0& TEX0, const GIFR
 	: Surface(r, temp)
 	, m_palette_obj(nullptr)
 	, m_palette(nullptr)
+	, m_valid_rect(0, 0)
 	, m_target(false)
 	, m_complete(false)
 	, m_spritehack_t(false)

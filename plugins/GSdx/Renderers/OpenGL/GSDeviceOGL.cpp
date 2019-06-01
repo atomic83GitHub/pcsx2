@@ -240,6 +240,10 @@ GSTexture* GSDeviceOGL::CreateSurface(int type, int w, int h, int fmt)
 	// FIXME: it will be more logical to do it in FetchSurface. This code is only called at first creation
 	//  of the texture. However we could reuse a deleted texture.
 	if (m_force_texture_clear == 0) {
+		// Clear won't be done if the texture isn't committed. Commit the full texture to ensure
+		// correct behavior of force clear option (debug option)
+		t->Commit();
+
 		switch(type)
 		{
 			case GSTexture::RenderTarget:
@@ -258,12 +262,16 @@ GSTexture* GSDeviceOGL::CreateSurface(int type, int w, int h, int fmt)
 GSTexture* GSDeviceOGL::FetchSurface(int type, int w, int h, int format)
 {
 	if (format == 0)
-		format = (type == GSTexture::DepthStencil) ? GL_DEPTH32F_STENCIL8 : GL_RGBA8;
+		format = (type == GSTexture::DepthStencil || type == GSTexture::SparseDepthStencil) ? GL_DEPTH32F_STENCIL8 : GL_RGBA8;
 
 	GSTexture* t = GSDevice::FetchSurface(type, w, h, format);
 
 
 	if (m_force_texture_clear) {
+		// Clear won't be done if the texture isn't committed. Commit the full texture to ensure
+		// correct behavior of force clear option (debug option)
+		t->Commit();
+
 		GSVector4 red(1.0f, 0.0f, 0.0f, 1.0f);
 		switch(type)
 		{
@@ -1213,6 +1221,8 @@ void GSDeviceOGL::CopyRectConv(GSTexture* sTex, GSTexture* dTex, const GSVector4
 
 	GL_PUSH(format("CopyRectConv from %d to %d", sid, did).c_str());
 
+	dTex->CommitRegion(GSVector2i(r.z, r.w));
+
 	glBindFramebuffer(GL_READ_FRAMEBUFFER, m_fbo_read);
 
 	glFramebufferTexture2D(GL_READ_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, sid, 0);
@@ -1239,6 +1249,8 @@ void GSDeviceOGL::CopyRect(GSTexture* sTex, GSTexture* dTex, const GSVector4i& r
 #ifdef ENABLE_OGL_DEBUG
 	PSSetShaderResource(6, sTex);
 #endif
+
+	dTex->CommitRegion(GSVector2i(r.z, r.w));
 
 	ASSERT(GLExtension::Has("GL_ARB_copy_image") && glCopyImageSubData);
 	glCopyImageSubData( sid, GL_TEXTURE_2D,
@@ -1352,6 +1364,7 @@ void GSDeviceOGL::StretchRect(GSTexture* sTex, const GSVector4& sRect, GSTexture
 	// ************************************
 	// Draw
 	// ************************************
+	dTex->CommitRegion(GSVector2i((int)dRect.z + 1, (int)dRect.w + 1));
 	DrawPrimitive();
 
 	// ************************************

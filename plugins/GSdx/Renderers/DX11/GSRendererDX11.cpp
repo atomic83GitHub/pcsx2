@@ -25,16 +25,11 @@
 GSRendererDX11::GSRendererDX11()
 	: GSRendererHW(new GSTextureCache11(this))
 {
+	m_sw_blending = theApp.GetConfigI("accurate_blending_unit_d3d11");
 	if (theApp.GetConfigB("UserHacks"))
-	{
-		UserHacks_AlphaHack    = theApp.GetConfigB("UserHacks_AlphaHack");
 		UserHacks_AlphaStencil = theApp.GetConfigB("UserHacks_AlphaStencil");
-	}
 	else
-	{
-		UserHacks_AlphaHack    = false;
 		UserHacks_AlphaStencil = false;
-	}
 
 	ResetStates();
 }
@@ -218,6 +213,36 @@ void GSRendererDX11::EmulateZbuffer()
 
 void GSRendererDX11::EmulateTextureShuffleAndFbmask()
 {
+	// FBmask blend level selection.
+	// We do this becaue:
+	// 1. D3D sucks.
+	// 2. FB copy is slow, especially on triangle primitives which is unplayable with some games.
+	// 3. SW blending isn't implemented yet.
+	bool enable_fbmask_emulation = false;
+	switch (m_sw_blending)
+	{
+		case ACC_BLEND_HIGH_D3D11:
+			// Fully enable Fbmask emulation like on opengl, note misses sw blending to work as opengl on some games (Genji).
+			// Debug
+			enable_fbmask_emulation = true;
+			break;
+		case ACC_BLEND_MEDIUM_D3D11:
+			// Enable Fbmask emulation excluding triangle class because it is quite slow.
+			// Exclude 0x80000000 because Genji needs sw blending, otherwise it breaks some effects.
+			enable_fbmask_emulation = ((m_vt.m_primclass != GS_TRIANGLE_CLASS) && (m_context->FRAME.FBMSK != 0x80000000));
+			break;
+		case ACC_BLEND_BASIC_D3D11:
+			// Enable Fbmask emulation excluding triangle class because it is quite slow.
+			// Exclude 0x80000000 because Genji needs sw blending, otherwise it breaks some effects.
+			// Also exclude fbmask emulation on texture shuffle just in case, it is probably safe tho.
+			enable_fbmask_emulation = (!m_texture_shuffle && (m_vt.m_primclass != GS_TRIANGLE_CLASS) && (m_context->FRAME.FBMSK != 0x80000000));
+			break;
+		case ACC_BLEND_NONE_D3D11:
+		default:
+			break;
+	}
+	
+
 	// Uncomment to disable texture shuffle emulation.
 	// m_texture_shuffle = false;
 
@@ -246,38 +271,75 @@ void GSRendererDX11::EmulateTextureShuffleAndFbmask()
 		if (rg_mask != 0xFF)
 		{
 			if (write_ba)
+			{
+				// fprintf(stderr, "Color shuffle %s => B\n", read_ba ? "B" : "R");
 				m_om_bsel.wb = 1;
+			}
 			else
+			{
+				// fprintf(stderr, "Color shuffle %s => R"\n, read_ba ? "B" : "R");
 				m_om_bsel.wr = 1;
-		}
-		else if ((fbmask & 0xFF) != 0xFF)
-		{
-#ifdef _DEBUG
-			fprintf(stderr, "Please fix me! wb %u wr %u\n", m_om_bsel.wb, m_om_bsel.wr);
-#endif
-			//ASSERT(0);
+			}
+			if (rg_mask)
+				m_ps_sel.fbmask = 1;
 		}
 
 		if (ba_mask != 0xFF)
 		{
 			if (write_ba)
+			{
+				// fprintf(stderr, "Color shuffle %s => A"\n, read_ba ? "A" : "G");
 				m_om_bsel.wa = 1;
+			}
 			else
+			{
+				// fprintf(stderr, "Color shuffle %s => G"\n, read_ba ? "A" : "G");
 				m_om_bsel.wg = 1;
+			}
+			if (ba_mask)
+				m_ps_sel.fbmask = 1;
 		}
-		else if ((fbmask & 0xFF) != 0xFF)
+
+		if (m_ps_sel.fbmask && enable_fbmask_emulation)
 		{
-#ifdef _DEBUG
-			fprintf(stderr, "Please fix me! wa %u wg %u\n", m_om_bsel.wa, m_om_bsel.wg);
-#endif
-			//ASSERT(0);
+			// fprintf(stderr, "FBMASK SW emulated fb_mask:%x on tex shuffle\n", fbmask);
+			ps_cb.FbMask.r = rg_mask;
+			ps_cb.FbMask.g = rg_mask;
+			ps_cb.FbMask.b = ba_mask;
+			ps_cb.FbMask.a = ba_mask;
+			m_bind_rtsample = true;
+		}
+		else
+		{
+			m_ps_sel.fbmask = 0;
 		}
 	}
 	else
 	{
 		m_ps_sel.dfmt = GSLocalMemory::m_psm[m_context->FRAME.PSM].fmt;
 
-		m_om_bsel.wrgba = ~GSVector4i::load((int)m_context->FRAME.FBMSK).eq8(GSVector4i::xffffffff()).mask();
+		GSVector4i fbmask_v = GSVector4i::load((int)m_context->FRAME.FBMSK);
+		int ff_fbmask = fbmask_v.eq8(GSVector4i::xffffffff()).mask();
+		int zero_fbmask = fbmask_v.eq8(GSVector4i::zero()).mask();
+
+		m_om_bsel.wrgba = ~ff_fbmask; // Enable channel if at least 1 bit is 0
+
+		m_ps_sel.fbmask = enable_fbmask_emulation && (~ff_fbmask & ~zero_fbmask & 0xF);
+
+		if (m_ps_sel.fbmask)
+		{
+			ps_cb.FbMask = fbmask_v.u8to32();
+			// Only alpha is special here, I think we can take a very unsafe shortcut
+			// Alpha isn't blended on the GS but directly copyied into the RT.
+			//
+			// Behavior is clearly undefined however there is a high probability that
+			// it will work. Masked bit will be constant and normally the same everywhere
+			// RT/FS output/Cached value.
+
+			/*fprintf(stderr, "FBMASK SW emulated fb_mask:%x on %d bits format\n", m_context->FRAME.FBMSK,
+				(GSLocalMemory::m_psm[m_context->FRAME.PSM].fmt == 2) ? 16 : 32);*/
+			m_bind_rtsample = true;
+		}
 	}
 }
 
@@ -613,6 +675,9 @@ void GSRendererDX11::EmulateTextureSampler(const GSTextureCache::Source* tex)
 		// Use invalid size to denormalize ST coordinate
 		ps_cb.WH.x = (float)(1 << m_context->stack.TEX0.TW);
 		ps_cb.WH.y = (float)(1 << m_context->stack.TEX0.TH);
+
+		// We can't handle m_target with invalid_tex0 atm due to upscaling
+		ASSERT(!tex->m_target);
 	}
 
 	// Only enable clamping in CLAMP mode. REGION_CLAMP will be done manually in the shader
@@ -623,6 +688,8 @@ void GSRendererDX11::EmulateTextureSampler(const GSTextureCache::Source* tex)
 
 void GSRendererDX11::ResetStates()
 {
+	m_bind_rtsample = false;
+
 	m_vs_sel.key = 0;
 	m_gs_sel.key = 0;
 	m_ps_sel.key = 0;
@@ -737,6 +804,18 @@ void GSRendererDX11::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sou
 				//ASSERT(0);
 			}
 		}
+
+		// Color clip
+		if (m_env.COLCLAMP.CLAMP == 0 && rt)
+		{
+			// fprintf(stderr, "COLCLIP HDR mode ENABLED\n");
+			GSVector4 dRect(ComputeBoundingBox(rtscale, rtsize));
+			GSVector4 sRect = dRect / GSVector4(rtsize.x, rtsize.y).xyxy();
+			hdr_rt = dev->CreateRenderTarget(rtsize.x, rtsize.y, DXGI_FORMAT_R32G32B32A32_FLOAT);
+			// Warning: StretchRect must be called before BeginScene otherwise
+			// vertices will be overwritten. Trust me you don't want to do that.
+			dev->StretchRect(rt, sRect, hdr_rt, dRect, ShaderConvert_COPY, false);
+		}
 	}
 
 	if (m_ps_sel.dfmt == 1)
@@ -764,18 +843,6 @@ void GSRendererDX11::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sou
 	}
 
 	//
-
-	bool hdr_colclip = m_env.COLCLAMP.CLAMP == 0 && rt;
-	if (hdr_colclip)
-	{
-		// fprintf(stderr, "COLCLIP HDR mode ENABLED\n");
-		GSVector4 dRect(ComputeBoundingBox(rtscale, rtsize));
-		GSVector4 sRect = dRect / GSVector4(rtsize.x, rtsize.y).xyxy();
-		hdr_rt = dev->CreateRenderTarget(rtsize.x, rtsize.y, DXGI_FORMAT_R32G32B32A32_FLOAT);
-		// Warning: StretchRect must be called before BeginScene otherwise
-		// vertices will be overwritten. Trust me you don't want to do that.
-		dev->StretchRect(rt, sRect, hdr_rt, dRect, ShaderConvert_COPY, false);
-	}
 
 	dev->BeginScene();
 
@@ -829,17 +896,6 @@ void GSRendererDX11::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sou
 
 	m_ps_sel.clr1 = m_om_bsel.IsCLR1();
 	m_ps_sel.fba = m_context->FBA.FBA;
-
-	// FIXME: Purge aout with AlphaHack when FbMask emulation is added.
-	if (m_ps_sel.shuffle)
-	{
-		m_ps_sel.aout = 0;
-	}
-	else
-	{
-		m_ps_sel.aout = UserHacks_AlphaHack || (m_context->FRAME.FBMSK & 0xff000000) == 0x7f000000;
-	}
-	// END OF FIXME
 
 	if (PRIM->FGE)
 	{
@@ -895,7 +951,7 @@ void GSRendererDX11::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sou
 	// to only draw pixels which would cause the destination alpha test to fail in the future once.
 	// Unfortunately this also means only drawing those pixels at all, which is why this is a hack.
 	// It helps render transparency in Amagami, breaks a lot of other games.
-	if (UserHacks_AlphaStencil && DATE && !DATE_one && m_om_bsel.wa && !m_context->TEST.ATE)
+	if (UserHacks_AlphaStencil && DATE && !DATE_one && !m_texture_shuffle && m_om_bsel.wa && !m_context->TEST.ATE)
 	{
 		// fprintf(stderr, "Alpha Stencil detected\n");
 		if (!m_context->FBA.FBA)
@@ -923,6 +979,15 @@ void GSRendererDX11::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sou
 	else
 	{
 		m_ps_sel.tfx = 4;
+	}
+
+	if (m_bind_rtsample)
+	{
+		// Bind the RT.This way special effect can use it.
+		// Do not always bind the rt when it's not needed,
+		// only bind it when effects use it such as fbmask emulation currently
+		// because we copy the frame buffer and it is quite slow.
+		dev->PSSetShaderResource(3, rt);
 	}
 
 	if (m_game.title == CRC::ICO)

@@ -163,6 +163,12 @@ void GSDevice::Recycle(GSTexture* t)
 {
 	if(t)
 	{
+#ifdef _DEBUG
+		// Uncommit saves memory but it means a futur allocation when we want to reuse the texture.
+		// Which is slow and defeat the purpose of the m_pool cache.
+		// However, it can help to spot part of texture that we forgot to commit
+		t->Uncommit();
+#endif
 		t->last_frame_used = m_frame;
 
 		m_pool.push_front(t);
@@ -199,6 +205,16 @@ void GSDevice::PurgePool()
 
 		m_pool.pop_back();
 	}
+}
+
+GSTexture* GSDevice::CreateSparseRenderTarget(int w, int h, int format)
+{
+	return FetchSurface(HasColorSparse() ? GSTexture::SparseRenderTarget : GSTexture::RenderTarget, w, h, format);
+}
+
+GSTexture* GSDevice::CreateSparseDepthStencil(int w, int h, int format)
+{
+	return FetchSurface(HasDepthSparse() ? GSTexture::SparseDepthStencil : GSTexture::DepthStencil, w, h, format);
 }
 
 GSTexture* GSDevice::CreateRenderTarget(int w, int h, int format)

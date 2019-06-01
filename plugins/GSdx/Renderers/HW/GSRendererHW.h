@@ -36,6 +36,7 @@ private:
 	int m_upscale_multiplier;
 
 	bool m_large_framebuffer;
+	bool m_disable_ts_half_bottom;
 	bool m_userhacks_align_sprite_X;
 	bool m_userhacks_enabled_gs_mem_clear;
 	bool m_userHacks_merge_sprite;
@@ -139,6 +140,8 @@ private:
 
 protected:
 	GSTextureCache* m_tc;
+	GSVector4i m_r;
+	GSTextureCache::Source* m_src;
 
 	virtual void DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Source* tex) = 0;
 
@@ -151,6 +154,7 @@ protected:
 	float m_userhacks_tcoffset_y;
 
 	int m_accurate_date;
+	int m_sw_blending;
 
 	bool m_channel_shuffle;
 
@@ -180,4 +184,7 @@ public:
 	void InvalidateVideoMem(const GIFRegBITBLTBUF& BITBLTBUF, const GSVector4i& r);
 	void InvalidateLocalMem(const GIFRegBITBLTBUF& BITBLTBUF, const GSVector4i& r, bool clut = false);
 	void Draw();
+
+	// Called by the texture cache to know if current texture is useful
+	virtual bool IsDummyTexture() const { return false;}
 };
