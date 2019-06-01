@@ -447,10 +447,10 @@
     <ClInclude Include="..\..\gui\Debugger\CtrlMemView.h" />
     <ClInclude Include="..\..\gui\Debugger\CtrlRegisterList.h" />
     <ClInclude Include="..\..\gui\Debugger\DebugEvents.h" />
-	<ClInclude Include="..\..\gui\Discord\discord_register.h" />
-    <ClInclude Include="..\..\gui\Discord\discord_rpc.h" />
     <ClInclude Include="..\..\gui\Debugger\DebuggerLists.h" />
     <ClInclude Include="..\..\gui\Debugger\DisassemblyDialog.h" />
+	<ClInclude Include="..\..\gui\Discord\discord_register.h" />
+    <ClInclude Include="..\..\gui\Discord\discord_rpc.h" />
     <ClInclude Include="..\..\gui\Panels\MemoryCardPanels.h" />
     <ClInclude Include="..\..\IopGte.h" />
     <ClInclude Include="..\..\IPU\IPUdma.h" />
@@ -538,7 +538,6 @@
     <ClInclude Include="..\..\CDVD\CDVDaccess.h" />
     <ClInclude Include="..\..\CDVD\CDVDisoReader.h" />
     <ClInclude Include="..\..\Ipu\IPU.h" />
-	<ClInclude Include="DiscordRPC.h" />
     <ClInclude Include="..\..\Ipu\IPU_Fifo.h" />
     <ClInclude Include="..\..\Ipu\yuv2rgb.h" />
     <ClInclude Include="..\..\Ipu\mpeg2lib\Mpeg.h" />
@@ -548,6 +547,7 @@
     <ClInclude Include="..\..\DebugTools\DisASM.h" />
     <ClInclude Include="..\..\DebugTools\DisVUmicro.h" />
     <ClInclude Include="..\..\DebugTools\DisVUops.h" />
+	<ClInclude Include="DiscordRPC.h" />
     <CustomBuildStep Include="..\..\rdebug\deci2.h">
       <ExcludedFromBuild>true</ExcludedFromBuild>
     </CustomBuildStep>

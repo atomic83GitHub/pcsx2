@@ -446,7 +446,7 @@ static void _ApplySettings( const Pcsx2Config& src, Pcsx2Config& fixup )
 		// the BIos isn't loaded until after initial calls to ApplySettings.
 
 		gameName = L"Booting PS2 BIOS... ";
-		sprintf(drpcGameTitleBuffer, "Bios de la PS2");
+		sprintf(drpcGameTitleBuffer, "PS2 BIOS");
 	}
 
 	//Till the end of this function, entry CRC will be 00000000
@@ -477,7 +477,6 @@ static void _ApplySettings( const Pcsx2Config& src, Pcsx2Config& fixup )
 			gameWsHacks.Printf(L" [%d widescreen hacks]", numberDbfCheatsLoaded);
 		}
 	}
-
 
 	drpcSetGame(drpcGameTitleBuffer);
 	drpcUpdate();
