@@ -181,11 +181,33 @@ namespace Implementations
 		{
 			case AspectRatio_Stretch:	art = AspectRatio_4_3; arts = "4:3"; break;
 			case AspectRatio_4_3:		art = AspectRatio_16_9; arts = "16:9"; break;
-			case AspectRatio_16_9:		art = AspectRatio_Stretch; arts = "Stretch"; break;
+			case AspectRatio_16_9:		art = AspectRatio_Frame; arts = "Frame"; break;
+			case AspectRatio_Frame:		art = AspectRatio_Stretch;	arts = "Stretch"; break;
 			default: break;
 		}
 
 		OSDlog(Color_StrongBlue, true, "(GSwindow) Aspect ratio: %s", arts);
+		UpdateImagePosition();
+	}
+
+	void GSwindow_CycleScalingType()
+	{
+		if (g_Conf->GSWindow.AspectRatio == AspectRatio_Stretch) {
+			OSDlog(Color_StrongBlue, true, "(GSwindow) Scaling Types are locked under \"Stretch\" aspect ratio");
+			return;
+		}
+
+ 		ScalingTypes& st = g_Conf->GSWindow.ScalingType;
+		const char *sts = "Not modified";
+		switch (st)
+		{
+		case ScalingType_Fit:		st = ScalingType_Integer;	sts = "Integer"; break;
+		case ScalingType_Integer:	st = ScalingType_Centered;	sts = "Centered"; break;
+		case ScalingType_Centered:	st = ScalingType_Fit;		sts = "Fit"; break;
+		default: break;
+		}
+
+ 		OSDlog(Color_StrongBlue, true, "(GSwindow) Scaling Type: %s", sts);
 		UpdateImagePosition();
 	}
 
@@ -535,6 +557,13 @@ static const GlobalCommandDescriptor CommandDeclarations[] =
 
 	{	"GSwindow_CycleAspectRatio",
 		Implementations::GSwindow_CycleAspectRatio,
+		NULL,
+		NULL,
+		true,
+	},
+
+	{	"GSwindow_CycleScalingType",
+		Implementations::GSwindow_CycleScalingType,
 		NULL,
 		NULL,
 		true,

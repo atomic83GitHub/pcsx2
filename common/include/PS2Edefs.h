@@ -260,6 +260,7 @@ void CALLBACK GSreset();
 //deprecated: GSgetTitleInfo was used in PCSX2 but no plugin supported it prior to r4070:
 //void CALLBACK GSgetTitleInfo( char dest[128] );
 void CALLBACK GSgetTitleInfo2(char *dest, size_t length);
+void CALLBACK GSgetImageSize(int *frame_w, int *frame_h);
 void CALLBACK GSwriteCSR(u32 value);
 s32 CALLBACK GSfreeze(int mode, freezeData *data);
 void CALLBACK GSconfigure();
@@ -551,6 +552,7 @@ typedef void(CALLBACK *_GSinitReadFIFO2)(u64 *pMem, int qwc);
 
 typedef void(CALLBACK *_GSchangeSaveState)(int, const char *filename);
 typedef void(CALLBACK *_GSgetTitleInfo2)(char *dest, size_t length);
+typedef void(CALLBACK *_GSgetImageSize)(int *frame_w, int *frame_h);
 typedef void(CALLBACK *_GSirqCallback)(void (*callback)());
 typedef void(CALLBACK *_GSsetBaseMem)(void *);
 typedef void(CALLBACK *_GSsetGameCRC)(int, int);
@@ -694,6 +696,7 @@ extern _GSinitReadFIFO2 GSinitReadFIFO2;
 
 extern _GSchangeSaveState GSchangeSaveState;
 extern _GSgetTitleInfo2 GSgetTitleInfo2;
+extern _GSgetImageSize GSgetImageSize;
 extern _GSmakeSnapshot GSmakeSnapshot;
 extern _GSmakeSnapshot2 GSmakeSnapshot2;
 extern _GSirqCallback GSirqCallback;

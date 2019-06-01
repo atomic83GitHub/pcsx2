@@ -93,7 +93,16 @@ enum AspectRatioType
 	AspectRatio_Stretch,
 	AspectRatio_4_3,
 	AspectRatio_16_9,
+	AspectRatio_Frame,
 	AspectRatio_MaxCount
+};
+
+enum ScalingTypes
+{
+	ScalingType_Fit,
+	ScalingType_Integer,
+	ScalingType_Centered,
+	ScalingType_MaxCount
 };
 
 enum FMVAspectRatioSwitchType
@@ -210,9 +219,11 @@ public:
 		bool		DefaultToFullscreen;
 		bool		AlwaysHideMouse;
 		bool		DisableResizeBorders;
+		bool		DisableScalingCompensation;
 		bool		DisableScreenSaver;
 
 		AspectRatioType AspectRatio;
+		ScalingTypes ScalingType;
 		FMVAspectRatioSwitchType FMVAspectRatioSwitch;
 		Fixed100	Zoom;
 		Fixed100	StretchY;

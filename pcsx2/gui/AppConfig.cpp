@@ -812,11 +812,13 @@ AppConfig::GSWindowOptions::GSWindowOptions()
 {
 	CloseOnEsc				= true;
 	DefaultToFullscreen		= false;
-	AlwaysHideMouse			= false;
-	DisableResizeBorders	= false;
+	AlwaysHideMouse			= true;
+	DisableScalingCompensation = false;
+	DisableResizeBorders	= true;
 	DisableScreenSaver		= true;
 
 	AspectRatio				= AspectRatio_4_3;
+	ScalingType				= ScalingType_Fit;
 	FMVAspectRatioSwitch	= FMV_AspectRatio_Switch_Off;
 	Zoom					= 100;
 	StretchY				= 100;
@@ -827,7 +829,7 @@ AppConfig::GSWindowOptions::GSWindowOptions()
 	WindowPos				= wxDefaultPosition;
 	IsMaximized				= false;
 	IsFullscreen			= false;
-	EnableVsyncWindowFlag	= false;
+	EnableVsyncWindowFlag	= true;
 
 	IsToggleFullscreenOnDoubleClick = true;
 }
@@ -858,6 +860,7 @@ void AppConfig::GSWindowOptions::LoadSave( IniInterface& ini )
 	IniEntry( CloseOnEsc );
 	IniEntry( DefaultToFullscreen );
 	IniEntry( AlwaysHideMouse );
+	IniEntry( DisableScalingCompensation );
 	IniEntry( DisableResizeBorders );
 	IniEntry( DisableScreenSaver );
 
@@ -874,12 +877,25 @@ void AppConfig::GSWindowOptions::LoadSave( IniInterface& ini )
 		L"Stretch",
 		L"4:3",
 		L"16:9",
+		L"Frame",
 		// WARNING: array must be NULL terminated to compute it size
 		NULL
 	};
 
 	ini.EnumEntry( L"AspectRatio", AspectRatio, AspectRatioNames, AspectRatio );
 
+	static const wxChar* ScalingTypeNames[] =
+	{
+		L"Fill",
+		L"Fit",
+		L"Integer",
+		L"Centered",
+		// WARNING: array must be NULL terminated to compute its size
+		NULL
+	};
+
+ 	ini.EnumEntry( L"ScalingType", ScalingType, ScalingTypeNames, ScalingType );
+	
 	static const wxChar* FMVAspectRatioSwitchNames[] =
 	{
 		L"Off",
@@ -888,7 +904,8 @@ void AppConfig::GSWindowOptions::LoadSave( IniInterface& ini )
 		// WARNING: array must be NULL terminated to compute it size
 		NULL
 	};
-	ini.EnumEntry(L"FMVAspectRatioSwitch", FMVAspectRatioSwitch, FMVAspectRatioSwitchNames, FMVAspectRatioSwitch);
+	
+	ini.EnumEntry( L"FMVAspectRatioSwitch", FMVAspectRatioSwitch, FMVAspectRatioSwitchNames, FMVAspectRatioSwitch );
 
 	IniEntry( Zoom );
 

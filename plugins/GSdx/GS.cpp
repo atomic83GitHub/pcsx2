@@ -930,7 +930,7 @@ EXPORT_C GSgetTitleInfo2(char* dest, size_t length)
 	s.append(s_renderer_name).append(s_renderer_type);
 
 	// TODO: this gets called from a different thread concurrently with GSOpen (on linux)
-	if (gsopen_done && s_gs != NULL && s_gs->m_GStitleInfoBuffer[0])
+	if (gsopen_done && s_gs != nullptr && s_gs->m_GStitleInfoBuffer[0])
 	{
 		std::lock_guard<std::mutex> lock(s_gs->m_pGSsetTitle_Crit);
 
@@ -943,6 +943,22 @@ EXPORT_C GSgetTitleInfo2(char* dest, size_t length)
 	}
 
 	strcpy(dest, s.c_str());
+}
+
+EXPORT_C GSgetImageSize(int *image_width, int *image_height)
+{
+	if (!gsopen_done || s_gs == nullptr)
+		return;
+
+ 	int en0 = s_gs->IsEnabled(0);
+	int en1 = s_gs->IsEnabled(1);
+	if (!en0 && !en1)
+		return;
+
+ 	int i = (en0 ^ en1) ? en1 : -1;
+
+ 	*image_width = s_gs->GetFrameRect(i).width();
+	*image_height = s_gs->GetFrameRect(i).height();
 }
 
 EXPORT_C GSsetFrameSkip(int frameskip)

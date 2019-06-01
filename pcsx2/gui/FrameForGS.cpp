@@ -29,6 +29,9 @@
 #include <sstream>
 #include <iomanip>
 
+static int s_image_width;
+static int s_image_height;
+
 static const KeyAcceleratorCode FULLSCREEN_TOGGLE_ACCELERATOR_GSPANEL=KeyAcceleratorCode( WXK_RETURN ).Alt();
 
 //#define GSWindowScaleDebug
@@ -56,6 +59,7 @@ void GSPanel::InitDefaultAccelerators()
 	m_Accels->Map( AAC( WXK_TAB ).Shift(),		"Framelimiter_SlomoToggle" );
 
 	m_Accels->Map( AAC( WXK_F6 ),				"GSwindow_CycleAspectRatio" );
+	m_Accels->Map( AAC( WXK_F6 ).Shift(),		"GSwindow_CycleScalingType" );
 
 	m_Accels->Map( AAC( WXK_NUMPAD_ADD ).Cmd(),			"GSwindow_ZoomIn" );	//CTRL on Windows/linux, CMD on OSX
 	m_Accels->Map( AAC( WXK_NUMPAD_SUBTRACT ).Cmd(),	"GSwindow_ZoomOut" );
@@ -162,6 +166,7 @@ void GSPanel::DoResize()
 	extern AspectRatioType iniAR;
 	extern bool switchAR;
 	double targetAr = clientAr;
+	bool acceptedImageSize = s_image_width > 0 && s_image_width <= client.GetWidth() && s_image_height > 0 && s_image_height <= client.GetHeight();
 
 	if (g_Conf->GSWindow.AspectRatio != iniAR) {
 		switchAR = false;
@@ -181,6 +186,8 @@ void GSPanel::DoResize()
 			targetAr = 4.0 / 3.0;
 		} else if (g_Conf->GSWindow.AspectRatio == AspectRatio_16_9) {
 			targetAr = 16.0 / 9.0;
+		} else if (g_Conf->GSWindow.AspectRatio == AspectRatio_Frame) {
+			targetAr = acceptedImageSize ? (double)s_image_width / s_image_height : 4.0 / 3.0;
 		}
 	}
 
@@ -190,6 +197,13 @@ void GSPanel::DoResize()
 		viewport.x = (int)( (double)viewport.x*arr + 0.5);
 	else if( arr > 1 )
 		viewport.y = (int)( (double)viewport.y/arr + 0.5);
+
+	if (g_Conf->GSWindow.AspectRatio != AspectRatio_Stretch && g_Conf->GSWindow.ScalingType != ScalingType_Fit && acceptedImageSize) {
+		int image_width_AR = s_image_height * targetAr;
+		int scaling = g_Conf->GSWindow.ScalingType == ScalingType_Integer ? std::min(client.GetWidth() / image_width_AR, client.GetHeight() / s_image_height) : 1;
+		viewport.x = image_width_AR * scaling;
+		viewport.y = s_image_height * scaling;
+	}
 
 	float zoom = g_Conf->GSWindow.Zoom.ToFloat()/100.0;
 	if( zoom == 0 )//auto zoom in untill black-bars are gone (while keeping the aspect ratio).
@@ -611,6 +625,32 @@ void GSFrame::OnUpdateTitle( wxTimerEvent& evt )
 	out << std::fixed << std::setprecision(2) << fps;
 	OSDmonitor(Color_StrongGreen, "FPS:", out.str());
 
+	const u64 &smode2 = *(u64 *)PS2GS_BASE(GS_SMODE2);
+	int interlacing = smode2 & 1;      // INT: 0 = Progressive, 1 = Interlaced
+	int interlacing_mode = smode2 & 2; // FFMD: 0 = Field mode, 2 = Frame mode
+
+	bool supported_GSWindow_Settings = (g_Conf->GSWindow.AspectRatio == AspectRatio_Frame || (g_Conf->GSWindow.AspectRatio != AspectRatio_Stretch &&
+		g_Conf->GSWindow.ScalingType != ScalingType_Fit));
+
+ 	if (GSgetImageSize != nullptr && supported_GSWindow_Settings) {
+		bool framemode_compensation = !g_Conf->GSWindow.DisableScalingCompensation && interlacing == 1 && interlacing_mode == 2;
+
+		int new_width = 0, new_height = 0;
+		GSgetImageSize(&new_width, &new_height);
+		
+		if (framemode_compensation)
+			new_height *= 2;
+
+		if (new_width > 1 && new_height > 1 && (s_image_width != new_width || s_image_height != new_height)) {
+			if (GSPanel* gsPanel = GetViewport()) {
+				s_image_width = new_width;
+				s_image_height = new_height;
+
+ 				gsPanel->DoResize();
+			}
+		}
+	}
+
 #ifdef __linux__
 	// Important Linux note: When the title is set in fullscreen the window is redrawn. Unfortunately
 	// an intermediate white screen appears too which leads to a very annoying flickering.
@@ -637,9 +677,8 @@ void GSFrame::OnUpdateTitle( wxTimerEvent& evt )
 		}
 	}
 
-	const u64& smode2 = *(u64*)PS2GS_BASE(GS_SMODE2);
-	wxString omodef = (smode2 & 2) ? templates.OutputFrame : templates.OutputField;
-	wxString omodei = (smode2 & 1) ? templates.OutputInterlaced : templates.OutputProgressive;
+	wxString omodef = interlacing_mode == 2 ? templates.OutputFrame : templates.OutputField;
+	wxString omodei = interlacing == 1 ? templates.OutputInterlaced : templates.OutputProgressive;
 
 	wxString title = templates.TitleTemplate;
 	title.Replace(L"${slot}",		pxsFmt(L"%d", States_GetCurrentSlot()));

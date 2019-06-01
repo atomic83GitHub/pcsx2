@@ -171,6 +171,7 @@ _GSinitReadFIFO    GSinitReadFIFO;
 _GSinitReadFIFO2   GSinitReadFIFO2;
 _GSchangeSaveState GSchangeSaveState;
 _GSgetTitleInfo2   GSgetTitleInfo2;
+_GSgetImageSize    GSgetImageSize;
 _GSmakeSnapshot	   GSmakeSnapshot;
 _GSmakeSnapshot2   GSmakeSnapshot2;
 _GSirqCallback 	   GSirqCallback;
@@ -415,6 +416,7 @@ static const LegacyApi_OptMethod s_MethMessOpt_GS[] =
 	{	"GSinitReadFIFO",	(vMeth**)&GSinitReadFIFO	},
 	{	"GSinitReadFIFO2",	(vMeth**)&GSinitReadFIFO2	},
 	{	"GSgifTransfer1",	(vMeth**)&GSgifTransfer1	},
+	{	"GSgetImageSize",	(vMeth**)&GSgetImageSize	},
 	{ NULL }
 };
 
