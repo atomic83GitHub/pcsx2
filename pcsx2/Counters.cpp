@@ -205,7 +205,12 @@ static void vSyncInfoCalc(vSyncTimingInfo* info, Fixed100 framesPerSecond, u32 s
 	// One test we have shows that VBlank lasts for ~22 HBlanks, another we have show that is the time it's off.
 	// There exists a game (Legendz Gekitou! Saga Battle) Which runs REALLY slowly if VBlank is ~22 HBlanks, so the other test wins.
 
-	u64 Blank = HalfFrame / 2; // PAL VBlank Period is off for roughly 22 HSyncs
+	// Broken code, see https://github.com/PCSX2/pcsx2/pull/2835
+	// u64 Blank = HalfFrame / 2; // PAL VBlank Period is off for roughly 22 HSyncs
+
+ 	// Alternative vsync timing.
+	// This fixes timing issues Jak II, Fatal Fury Battle Archives (1) and Shadow Of Rome but break Legendz Gekitou! Saga Battle.
+	u64 Blank = (Frame / scansPerFrame) * (gsVideoMode == GS_VideoMode::NTSC ? 26 : 22);
 
 	//I would have suspected this to be Frame - Blank, but that seems to completely freak it out
 	//and the test results are completely wrong. It seems 100% the same as the PS2 test on this,

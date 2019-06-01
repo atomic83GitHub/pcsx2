@@ -65,6 +65,12 @@
     </ClCompile>
     <Link>
       <LargeAddressAware>Yes</LargeAddressAware>
+      <AdditionalDependencies Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(ProjectRootDir)\gui\Discord\discord-rpc.lib;comctl32.lib;ws2_32.lib;shlwapi.lib;winmm.lib;rpcrt4.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies Condition="'$(Configuration)|$(Platform)'=='Devel|Win32'">$(ProjectRootDir)\gui\Discord\discord-rpc.lib;comctl32.lib;ws2_32.lib;shlwapi.lib;winmm.lib;rpcrt4.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(ProjectRootDir)\gui\Discord\discord-rpc.lib;comctl32.lib;ws2_32.lib;shlwapi.lib;winmm.lib;rpcrt4.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(ProjectRootDir)\gui\Discord\discord-rpc.lib;comctl32.lib;ws2_32.lib;shlwapi.lib;winmm.lib;rpcrt4.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies Condition="'$(Configuration)|$(Platform)'=='Devel|x64'">$(ProjectRootDir)\gui\Discord\discord-rpc.lib;comctl32.lib;ws2_32.lib;shlwapi.lib;winmm.lib;rpcrt4.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(ProjectRootDir)\gui\Discord\discord-rpc.lib;comctl32.lib;ws2_32.lib;shlwapi.lib;winmm.lib;rpcrt4.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
@@ -176,6 +182,7 @@
     <ClCompile Include="..\..\gui\Debugger\DebuggerLists.cpp" />
     <ClCompile Include="..\..\gui\Debugger\DisassemblyDialog.cpp" />
     <ClCompile Include="..\..\gui\Dialogs\McdConfigDialog.cpp" />
+	<ClCompile Include="..\..\gui\Discord\DiscordRPC.cpp" />
     <ClCompile Include="..\..\gui\Panels\MemoryCardListView.cpp" />
     <ClCompile Include="..\..\IopGte.cpp" />
     <ClCompile Include="..\..\IPU\IPUdma.cpp" />
@@ -440,6 +447,8 @@
     <ClInclude Include="..\..\gui\Debugger\CtrlMemView.h" />
     <ClInclude Include="..\..\gui\Debugger\CtrlRegisterList.h" />
     <ClInclude Include="..\..\gui\Debugger\DebugEvents.h" />
+	<ClInclude Include="..\..\gui\Discord\discord_register.h" />
+    <ClInclude Include="..\..\gui\Discord\discord_rpc.h" />
     <ClInclude Include="..\..\gui\Debugger\DebuggerLists.h" />
     <ClInclude Include="..\..\gui\Debugger\DisassemblyDialog.h" />
     <ClInclude Include="..\..\gui\Panels\MemoryCardPanels.h" />
@@ -529,6 +538,7 @@
     <ClInclude Include="..\..\CDVD\CDVDaccess.h" />
     <ClInclude Include="..\..\CDVD\CDVDisoReader.h" />
     <ClInclude Include="..\..\Ipu\IPU.h" />
+	<ClInclude Include="DiscordRPC.h" />
     <ClInclude Include="..\..\Ipu\IPU_Fifo.h" />
     <ClInclude Include="..\..\Ipu\yuv2rgb.h" />
     <ClInclude Include="..\..\Ipu\mpeg2lib\Mpeg.h" />
