@@ -814,7 +814,7 @@ AppConfig::GSWindowOptions::GSWindowOptions()
 	DefaultToFullscreen		= false;
 	AlwaysHideMouse			= true;
 	DisableScalingCompensation = false;
-	DisableResizeBorders	= true;
+	DisableResizeBorders	= false;
 	DisableScreenSaver		= true;
 
 	AspectRatio				= AspectRatio_4_3;
