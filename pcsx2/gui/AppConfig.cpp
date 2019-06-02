@@ -825,11 +825,11 @@ AppConfig::GSWindowOptions::GSWindowOptions()
 	OffsetX					= 0;
 	OffsetY					= 0;
 
-	WindowSize				= wxSize( 640, 480 );
+	WindowSize				= wxSize( 1280, 720 );
 	WindowPos				= wxDefaultPosition;
 	IsMaximized				= false;
 	IsFullscreen			= false;
-	EnableVsyncWindowFlag	= true;
+	EnableVsyncWindowFlag	= false;
 
 	IsToggleFullscreenOnDoubleClick = true;
 }
