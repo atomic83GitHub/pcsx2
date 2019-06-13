@@ -207,7 +207,7 @@ void GSDevice11::SetupPS(PSSelector sel, const PSConstantBuffer* cb, PSSamplerSe
 
 	if(i == m_ps.end())
 	{
-		std::string str[26];
+		std::string str[31];
 
 		str[0] = format("%d", sel.fst);
 		str[1] = format("%d", sel.wms);
@@ -235,6 +235,11 @@ void GSDevice11::SetupPS(PSSelector sel, const PSConstantBuffer* cb, PSSamplerSe
 		str[23] = format("%d", sel.fmt >> 2);
 		str[24] = format("%d", sel.invalid_tex0);
 		str[25] = format("%d", m_upscale_multiplier ? m_upscale_multiplier : 1);
+		str[26] = format("%d", sel.hdr);
+		str[27] = format("%d", sel.blend_a);
+		str[28] = format("%d", sel.blend_b);
+		str[29] = format("%d", sel.blend_c);
+		str[30] = format("%d", sel.blend_d);
 
 		D3D_SHADER_MACRO macro[] =
 		{
@@ -264,6 +269,11 @@ void GSDevice11::SetupPS(PSSelector sel, const PSConstantBuffer* cb, PSSamplerSe
 			{"PS_PAL_FMT", str[23].c_str() },
 			{"PS_INVALID_TEX0", str[24].c_str() },
 			{"PS_SCALE_FACTOR", str[25].c_str() },
+			{"PS_HDR", str[26].c_str() },
+			{"PS_BLEND_A", str[27].c_str() },
+			{"PS_BLEND_B", str[28].c_str() },
+			{"PS_BLEND_C", str[29].c_str() },
+			{"PS_BLEND_D", str[30].c_str() },
 			{NULL, NULL},
 		};
 
@@ -398,12 +408,19 @@ void GSDevice11::SetupOM(OMDepthStencilSelector dssel, OMBlendSelector bsel, uin
 		{
 			int i = ((bsel.a * 3 + bsel.b) * 3 + bsel.c) * 3 + bsel.d;
 
-			bd.RenderTarget[0].BlendOp = m_blendMapD3D11[i].op;
-			bd.RenderTarget[0].SrcBlend = m_blendMapD3D11[i].src;
-			bd.RenderTarget[0].DestBlend = m_blendMapD3D11[i].dst;
+			HWBlend blend = GetBlend(i);
+			bd.RenderTarget[0].BlendOp = (D3D11_BLEND_OP)blend.op;
+			bd.RenderTarget[0].SrcBlend = (D3D11_BLEND)blend.src;
+			bd.RenderTarget[0].DestBlend = (D3D11_BLEND)blend.dst;
 			bd.RenderTarget[0].BlendOpAlpha = D3D11_BLEND_OP_ADD;
 			bd.RenderTarget[0].SrcBlendAlpha = D3D11_BLEND_ONE;
 			bd.RenderTarget[0].DestBlendAlpha = D3D11_BLEND_ZERO;
+
+			if (bsel.accu_blend)
+			{
+				bd.RenderTarget[0].SrcBlend = D3D11_BLEND_ONE;
+				bd.RenderTarget[0].DestBlend = D3D11_BLEND_ONE;
+			}
 		}
 
 		if(bsel.wr) bd.RenderTarget[0].RenderTargetWriteMask |= D3D11_COLOR_WRITE_ENABLE_RED;
