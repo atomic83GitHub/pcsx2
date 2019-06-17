@@ -222,14 +222,13 @@ public:
 				uint32 channel:3;
 
 				// Hack
-				uint32 spritehack:1;
 				uint32 tcoffsethack:1;
 				uint32 urban_chaos_hle:1;
 				uint32 tales_of_abyss_hle:1;
 				uint32 point_sampler:1;
 				uint32 invalid_tex0:1; // Lupin the 3rd
 
-				uint32 _free:18;
+				uint32 _free:19;
 			};
 
 			uint64 key;
@@ -314,6 +313,29 @@ public:
 	};
 
 	#pragma pack(pop)
+
+	class ShaderMacro
+	{
+		struct mcstr
+		{
+			const char* name, * def;
+			mcstr(const char* n, const char* d) : name(n), def(d) {}
+		};
+
+		struct mstring
+		{
+			std::string name, def;
+			mstring(const char* n, std::string d) : name(n), def(d) {}
+		};
+
+		std::vector<mstring> mlist;
+		std::vector<mcstr> mout;
+
+	public:
+		ShaderMacro(std::string& smodel);
+		void AddMacro(const char* n, int d);
+		D3D_SHADER_MACRO* GetPtr(void);
+	};
 
 private:
 	float m_hack_topleft_offset;
@@ -533,27 +555,5 @@ public:
 	void CreateShader(std::vector<char> source, const char* fn, ID3DInclude *include, const char* entry, D3D_SHADER_MACRO* macro, ID3D11PixelShader** ps);
 
 	void CompileShader(std::vector<char> source, const char* fn, ID3DInclude *include, const char* entry, D3D_SHADER_MACRO* macro, ID3DBlob** shader, std::string shader_model);
-
-	template<class T> void PrepareShaderMacro(std::vector<T>& dst, const T* src)
-	{
-		dst.clear();
-
-		while (src && src->Definition && src->Name)
-		{
-			dst.push_back(*src++);
-		}
-
-		T m;
-
-		m.Name = "SHADER_MODEL";
-		m.Definition = m_shader.model.c_str();
-
-		dst.push_back(m);
-
-		m.Name = NULL;
-		m.Definition = NULL;
-
-		dst.push_back(m);
-	}
 };
 
