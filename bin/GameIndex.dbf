@@ -12069,6 +12069,18 @@ Region = PAL-M5
 Serial = SLES-52527
 Name   = Harry Potter og Fangen fra Azkaban
 Region = PAL-M4 // Nordic.
+[patches = 51E417AA]
+	comment=Patch by Prafull and Arapapa
+	// Fixes game hanging on loading screens.
+	// EETimingHack may be needed.
+	patch=1,EE,0016cf8c,word,00000000
+	patch=1,EE,0013cd64,word,00000000
+	patch=1,EE,0013c1a8,word,00000000
+	patch=1,EE,0013c1cc,word,00000000
+	patch=1,EE,80000000,word,00000000
+	patch=1,EE,0013df84,word,00000000
+	patch=1,EE,0013cd3c,word,00000000
+[/patches]
 ---------------------------------------------
 Serial = SLES-52531
 Name   = Suffering, The
@@ -42560,6 +42572,7 @@ Serial = SLUS-21710
 Name   = PopCap Hits Volume 1
 Region = NTSC-U
 Compat = 5
+EETimingHack = 1 // Fixes random crashing throughout the game.
 ---------------------------------------------
 Serial = SLUS-21711
 Name   = Biathlon 2008
@@ -42825,6 +42838,7 @@ Serial = SLUS-21768
 Name   = PopCap Hits Vol.2
 Region = NTSC-U
 Compat = 5
+EETimingHack = 1 // Fixes random crashing throughout the game.
 ---------------------------------------------
 Serial = SLUS-21769
 Name   = Yakuza 2
